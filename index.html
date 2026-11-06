@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>유압 실린더 및 HPU 계산기</title>
+    <style>
+        :root {
+            --primary-color: #007aff;
+            --bg-color: #f2f2f7;
+            --card-bg: #ffffff;
+            --text-color: #1c1c1e;
+            --secondary-text: #8e8e93;
+            --border-color: #e5e5ea;
+            --accent-yellow: #fff9db;
+            --accent-green: #e6fcf5;
+        }
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        header {
+            background-color: var(--card-bg);
+            padding: 20px 16px;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-color);
+        }
+        .container {
+            padding: 16px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--secondary-text);
+            text-transform: uppercase;
+            margin: 20px 0 8px 4px;
+        }
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 4px 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .input-group, .output-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .input-group:last-child, .output-group:last-child {
+            border-bottom: none;
+        }
+        label {
+            font-size: 16px;
+            font-weight: 500;
+        }
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+        }
+        input {
+            border: none;
+            background-color: var(--accent-yellow);
+            font-size: 16px;
+            font-weight: 600;
+            text-align: right;
+            padding: 6px 8px;
+            border-radius: 6px;
+            width: 90px;
+            color: #000;
+        }
+        input:focus {
+            outline: 2px solid var(--primary-color);
+        }
+        .unit {
+            font-size: 14px;
+            color: var(--secondary-text);
+            width: 65px;
+            margin-left: 8px;
+            text-align: left;
+        }
+        .value-output {
+            font-size: 16px;
+            font-weight: 600;
+            color: #097969;
+            text-align: right;
+            padding: 6px 8px;
+            background-color: var(--accent-green);
+            border-radius: 6px;
+            min-width: 90px;
+            display: inline-block;
+        }
+        .highlight-card {
+            background-color: #e8f4fd;
+        }
+        .highlight-text {
+            color: var(--primary-color) !important;
+            font-size: 18px !important;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>두산중공업 실린더 & HPU 계산기</h1>
+</header>
+
+<div class="container">
+    <div class="section-title">수동 입력 항목 (아이폰 전용)</div>
+    <div class="card">
+        <div class="input-group">
+            <label>실린더 수량</label>
+            <div class="input-wrapper">
+                <input type="number" id="qty" value="4" step="1" oninput="calculate()">
+                <span class="unit">ea</span>
+            </div>
+        </div>
+        <div class="input-group">
+            <label>피스톤경 (내경)</label>
+            <div class="input-wrapper">
+                <input type="number" id="piston_dia" value="140" step="0.1" oninput="calculate()">
+                <span class="unit">mm</span>
+            </div>
+        </div>
+        <div class="input-group">
+            <label>로드 경</label>
+            <div class="input-wrapper">
+                <input type="number" id="rod_dia" value="85" step="0.1" oninput="calculate()">
+                <span class="unit">mm</span>
+            </div>
+        </div>
+        <div class="input-group">
+            <label>사용 압력</label>
+            <div class="input-wrapper">
+                <input type="number" id="pressure" value="315" step="0.1" oninput="calculate()">
+                <span class="unit">kgf/Target</span>
+            </div>
+        </div>
+        <div class="input-group">
+            <label>스트로크</label>
+            <div class="input-wrapper">
+                <input type="number" id="stroke" value="500" step="0.1" oninput="calculate()">
+                <span class="unit">mm</span>
+            </div>
+        </div>
+        <div class="input-group">
+            <label>전진 속도</label>
+            <div class="input-wrapper">
+                <input type="number" id="v_adv" value="1.5" step="0.1" oninput="calculate()">
+                <span class="unit">mm/sec</span>
+            </div>
+        </div>
+        <div class="input-group">
+            <label>후진 속도</label>
+            <div class="input-wrapper">
+                <input type="number" id="v_ret" value="2.35" step="0.1" oninput="calculate()">
+                <span class="unit">mm/sec</span>
+            </div>
+        </div>
+        <div class="input-group">
+            <label>모터 효율</label>
+            <div class="input-wrapper">
+                <input type="number" id="efficiency" value="0.85" step="0.01" oninput="calculate()">
+                <span class="unit">η</span>
+            </div>
+        </div>
+        <div class="input-group">
+            <label>안전율</label>
+            <div class="input-wrapper">
+                <input type="number" id="safety_factor" value="1.2" step="0.1" oninput="calculate()">
+                <span class="unit">배</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-title">추천 모터 및 용량 (자동 계산)</div>
+    <div class="card highlight-card">
+        <div class="output-group">
+            <label style="font-weight:700; color:var(--primary-color);">추천 표준모터</label>
+            <div class="input-wrapper">
+                <span class="value-output highlight-text" id="motor_rec" style="background-color: #d0e7ff;">0.0</span>
+                <span class="unit" style="font-weight:700; color:var(--primary-color);">kW</span>
+            </div>
+        </div>
+        <div class="output-group">
+            <label>이론 모터용량</label>
+            <div class="input-wrapper">
+                <span class="value-output" id="motor_theory">0.0</span>
+                <span class="unit">kW</span>
+            </div>
+        </div>
+        <div class="output-group">
+            <label>설계 소요동력</label>
+            <div class="input-wrapper">
+                <span class="value-output" id="motor_design">0.0</span>
+                <span class="unit">kW</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-title">단면적 및 하중 계산</div>
+    <div class="card">
+        <div class="output-group">
+            <label>전진 단면적</label>
+            <div class="input-wrapper">
+                <span class="value-output" id="area_adv">0.0</span>
+                <span class="unit">㎠</span>
+            </div>
+        </div>
+        <div class="output-group">
+            <label>후진 단면적</label>
+            <div class="input-wrapper">
+                <span class="value-output" id="area_ret">0.0</span>
+                <span class="unit">㎠</span>
+            </div>
+        </div>
+        <div class="output-group">
+            <label>총 전진 하중</label>
+            <div class="input-wrapper">
+                <span class="value-output" id="force_adv">0.0</span>
+                <span class="unit">ton</span>
+            </div>
+        </div>
+        <div class="output-group">
+            <label>총 후진 하중</label>
+            <div class="input-wrapper">
+                <span class="value-output" id="force_ret">0.0</span>
+                <span class="unit">ton</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-title">유량 및 시간 계산</div>
+    <div class="card">
+        <div class="output-group">
+            <label>전진 총 유량</label>
+            <div class="input-wrapper">
+                <span class="value-output" id="flow_adv">0.0</span>
+                <span class="unit">LPM</span>
+            </div>
+        </div>
+        <div class="output-group">
+            <label>후진 총 유량</label>
+            <div class="input-wrapper">
+                <span class="value-output" id="flow_ret">0.0</span>
+                <span class="unit">LPM</span>
+            </div>
+        </div>
+        <div class="output-group">
+            <label>전진 작동 시간</label>
+            <div class="input-wrapper">
+                <span class="value-output" id="time_adv">0.0</span>
+                <span class="unit">sec</span>
+            </div>
+        </div>
+        <div class="output-group">
+            <label>후진 작동 시간</label>
+            <div class="input-wrapper">
+                <span class="value-output" id="time_ret">0.0</span>
+                <span class="unit">sec</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const standardMotors = [0.4, 0.75, 1.5, 2.2, 3.7, 5.5, 7.5, 11, 15, 18.5, 22, 30, 37, 45, 55, 75];
+
+    function calculate() {
+        const qty = parseFloat(document.getElementById('qty').value) || 0;
+        const pistonDia = parseFloat(document.getElementById('piston_dia').value) || 0;
+        const rodDia = parseFloat(document.getElementById('rod_dia').value) || 0;
+        const pressure = parseFloat(document.getElementById('pressure').value) || 0;
+        const stroke = parseFloat(document.getElementById('stroke').value) || 0;
+        const vAdv = parseFloat(document.getElementById('v_adv').value) || 0;
+        const vRet = parseFloat(document.getElementById('v_ret').value) || 0;
+        const eff = parseFloat(document.getElementById('efficiency').value) || 1;
+        const sf = parseFloat(document.getElementById('safety_factor').value) || 1;
+
+        // 1. 단면적 계산 (cm^2)
+        const areaAdv = Math.PI * Math.pow(pistonDia / 10, 2) / 4;
+        const areaRod = Math.PI * Math.pow(rodDia / 10, 2) / 4;
+        const areaRet = areaAdv - areaRod;
+
+        // 2. 하중 계산 (ton, kgf -> ton 변환과 수량 반영)
+        const forceAdv = (areaAdv * pressure * qty) / 1000;
+        const forceRet = (areaRet * pressure * qty) / 1000;
+
+        // 3. 유량 계산 (LPM = cm^2 * cm/sec * 60 / 1000 -> qty 반영)
+        // vAdv는 mm/sec 이므로 cm/sec로 바꾸려면 / 10
+        const flowAdv = (areaAdv * (vAdv / 10) * 60 * qty) / 1000;
+        const flowRet = (areaRet * (vRet / 10) * 60 * qty) / 1000;
+        const maxFlow = Math.max(flowAdv, flowRet);
+
+        // 4. 시간 계산 (sec)
+        const timeAdv = vAdv > 0 ? stroke / vAdv : 0;
+        const timeRet = vRet > 0 ? stroke / vRet : 0;
+
+        // 5. 모터 용량 계산 (kW)
+        // kgf/cm^2 -> bar (대략 1:0.980665 이지만 통상 유압선정시 1:1 매칭 혹은 정밀식 적용)
+        // 공식: (Pressure_bar * Flow_LPM) / (612 * eff)
+        const pressureBar = pressure * 0.980665;
+        const motorTheory = maxFlow > 0 ? (pressureBar * maxFlow) / (612 * eff) : 0;
+        const motorDesign = motorTheory * sf;
+
+        // 추천 표준 모터 매칭
+        let motorRec = standardMotors[standardMotors.length - 1];
+        for (let i = 0; i < standardMotors.length; i++) {
+            if (standardMotors[i] >= motorDesign) {
+                motorRec = standardMotors[i];
+                break;
+            }
+        }
+        if (motorDesign > standardMotors[standardMotors.length - 1]) {
+            motorRec = Math.ceil(motorDesign);
+        }
+
+        // 결과 업데이트 (소수점 한자리)
+        document.getElementById('area_adv').innerText = areaAdv.toFixed(1);
+        document.getElementById('area_ret').innerText = areaRet.toFixed(1);
+        document.getElementById('force_adv').innerText = forceAdv.toFixed(1);
+        document.getElementById('force_ret').innerText = forceRet.toFixed(1);
+        document.getElementById('flow_adv').innerText = flowAdv.toFixed(1);
+        document.getElementById('flow_ret').innerText = flowRet.toFixed(1);
+        document.getElementById('time_adv').innerText = timeAdv.toFixed(1);
+        document.getElementById('time_ret').innerText = timeRet.toFixed(1);
+        document.getElementById('motor_theory').innerText = motorTheory.toFixed(1);
+        document.getElementById('motor_design').innerText = motorDesign.toFixed(1);
+        document.getElementById('motor_rec').innerText = motorRec.toFixed(1);
+    }
+
+    // 초기 실행
+    calculate();
+</script>
+
+</body>
+</html>
